@@ -121,4 +121,4 @@ lst = [20,10,3,35,2,62,39,21,1,78,16,11,50,76,28]
 for i in lst:
     bt.add_node(i)
 print(f"level order: {bt}")
-print (f"\n\npost_order: {bt.post_order()}")
+print (f"\npost_order: {bt.post_order()}")
