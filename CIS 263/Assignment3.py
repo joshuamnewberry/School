@@ -103,4 +103,5 @@ class BinarySearchTree:
             curr = queue.remove()
             if curr is not None:
                 res += " " + curr.value
-                
+                queue.add(curr.left)
+                queue.add(curr.right)
