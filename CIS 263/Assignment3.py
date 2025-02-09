@@ -105,3 +105,4 @@ class BinarySearchTree:
                 res += " " + curr.value
                 queue.add(curr.left)
                 queue.add(curr.right)
+        return res
