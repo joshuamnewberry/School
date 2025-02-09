@@ -106,6 +106,14 @@ class BinarySearchTree:
                 queue.add(curr.left)
                 queue.add(curr.right)
         return res
+    
+    def post_order(self) -> str:
+        return self.post_order_helper(self.head)
+    
+    def post_order_helper(self, curr:treeNode) -> str:
+        if curr is None:
+            return ""
+        return self.post_order_helper(curr.left) + self.post_order_helper(curr.right) + f" {curr.value}"
 
 bt = BinarySearchTree()
 print("inserting 20 10 3 35 2 62 39 21 1 78 16 11 50 76 28")
@@ -113,3 +121,4 @@ lst = [20,10,3,35,2,62,39,21,1,78,16,11,50,76,28]
 for i in lst:
     bt.add_node(i)
 print(f"level order: {bt}")
+print (f"\n\npost_order: {bt.post_order()}")
