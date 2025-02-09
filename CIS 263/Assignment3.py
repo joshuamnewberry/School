@@ -114,6 +114,24 @@ class BinarySearchTree:
         if curr is None:
             return ""
         return self.post_order_helper(curr.left) + self.post_order_helper(curr.right) + f" {curr.value}"
+    
+    def num_nodes(self) -> int:
+        return self.num_nodes_helper(self.head)
+    
+    def num_nodes_helper(self, curr:treeNode) -> int:
+        if curr is None:
+            return 0
+        return 1 + self.num_nodes_helper(curr.left) + self.num_nodes_helper(curr.right)
+    
+    def num_leaves(self) -> int:
+        return self.num_leaves_helper(self.head)
+    
+    def num_leaves_helper(self, curr:treeNode) -> int:
+        if curr is None:
+            return 0
+        if curr.left is None and curr.right is None:
+            return 1
+        return self.num_leaves_helper(curr.left) + self.num_leaves_helper(curr.right)
 
 bt = BinarySearchTree()
 print("inserting 20 10 3 35 2 62 39 21 1 78 16 11 50 76 28")
