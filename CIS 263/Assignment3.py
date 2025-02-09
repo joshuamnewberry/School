@@ -96,13 +96,20 @@ class BinarySearchTree:
             return ""
         curr = self.head
         queue = Queue()
-        res = self.head.value
+        res = str(self.head.value)
         queue.add(curr.left)
         queue.add(curr.right)
         while queue.size > 0:
             curr = queue.remove()
             if curr is not None:
-                res += " " + curr.value
+                res += " " + str(curr.value)
                 queue.add(curr.left)
                 queue.add(curr.right)
         return res
+
+bt = BinarySearchTree()
+print("inserting 20 10 3 35 2 62 39 21 1 78 16 11 50 76 28")
+lst = [20,10,3,35,2,62,39,21,1,78,16,11,50,76,28]
+for i in lst:
+    bt.add_node(i)
+print(f"level order: {bt}")
