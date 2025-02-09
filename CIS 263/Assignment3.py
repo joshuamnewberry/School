@@ -61,7 +61,7 @@ class BinarySearchTree:
         self.length = length
     
     def __str__(self) -> str:
-        return self.level_order
+        return self.level_order()
 
     def add_node(self, new_node:treeNode|int|float) -> None:
         if type(new_node) != treeNode:
@@ -92,8 +92,15 @@ class BinarySearchTree:
                         return
     
     def level_order(self) -> str:
+        if self.head is None:
+            return ""
         curr = self.head
-        nodes_traversed = 0
         queue = Queue()
-        while nodes_traversed < self.length and queue.size > 0:
-            curr
+        res = self.head.value
+        queue.add(curr.left)
+        queue.add(curr.right)
+        while queue.size > 0:
+            curr = queue.remove()
+            if curr is not None:
+                res += " " + curr.value
+                
