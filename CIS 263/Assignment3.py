@@ -134,9 +134,11 @@ class BinarySearchTree:
         return self.num_leaves_helper(curr.left) + self.num_leaves_helper(curr.right)
 
 bt = BinarySearchTree()
-print("inserting 20 10 3 35 2 62 39 21 1 78 16 11 50 76 28")
 lst = [20,10,3,35,2,62,39,21,1,78,16,11,50,76,28]
 for i in lst:
     bt.add_node(i)
-print(f"level order: {bt}")
+print("bt = 20 10 3 35 2 62 39 21 1 78 16 11 50 76 28")
+print(f"\nlevel order: {bt}")
 print (f"\npost_order: {bt.post_order()}")
+print(f"\nnum nodes: {bt.num_nodes()}")
+print(f"\nnum leaves: {bt.num_leaves()}")
