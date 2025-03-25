@@ -1,6 +1,39 @@
-#Start a comment here
-def Havel_Hakimi(input_list):
-    return True
+from typing import List
+
+def Havel_Hakimi_Helper(input_list:List[int]) -> bool:
+    # If first number is negative return false
+    if input_list[0] < 0:
+        return False
+    # If the first number is bigger than the length of the list - 1 return false
+    if input_list[0] > len(input_list)-1:
+        return False
+    # If the first number is 0
+    if input_list[0] == 0:
+        # And the length is 1 return true
+        if len(input_list) == 1:
+            return True
+        # Recurse and cut off the first element of the list
+        return Havel_Hakimi_Helper(input_list[1:])
+    # Loop over 1 - n values in the list where n is the first element of the list
+    for i in range(1, input_list[0]+1):
+        # Subtract 1
+        input_list[i] -= 1
+    # Recurse and cut off the first element of the list
+    return Havel_Hakimi_Helper(input_list[1:])
+
+# Check initial conditions, then send the input to the real function
+def Havel_Hakimi(input_list:List[int]) -> bool:
+    # Check even degree sum
+    if sum(input_list) % 2 == 1:
+        return False
+    # Check for negative degrees
+    for element in input_list:
+        if type(element) != int:
+            return False
+        if element < 0:
+            return False
+    # Send input to the recursive function
+    return Havel_Hakimi_Helper(input_list)
 
 #Test cases begin here
 
