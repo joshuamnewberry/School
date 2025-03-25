@@ -2,24 +2,23 @@ from typing import List
 
 def Havel_Hakimi_Helper(input_list:List[int]) -> bool:
     # If first number is negative return false
-    if input_list[0] < 0:
+    if input_list[len(input_list)-1] < 0:
         return False
     # If the first number is bigger than the length of the list - 1 return false
     if input_list[0] > len(input_list)-1:
         return False
     # If the first number is 0
     if input_list[0] == 0:
-        # And the length is 1 return true
-        if len(input_list) == 1:
-            return True
-        # Recurse and cut off the first element of the list
-        return Havel_Hakimi_Helper(input_list[1:])
+        return True
     # Loop over 1 - n values in the list where n is the first element of the list
     for i in range(1, input_list[0]+1):
         # Subtract 1
         input_list[i] -= 1
-    # Recurse and cut off the first element of the list
-    return Havel_Hakimi_Helper(input_list[1:])
+    # Sort reversed and cut off the first element of the list
+    input_list = input_list[1:]
+    input_list.sort(reverse=True)
+    # Send the list back through the method
+    return Havel_Hakimi_Helper(input_list)
 
 # Check initial conditions, then send the input to the real function
 def Havel_Hakimi(input_list:List[int]) -> bool:
