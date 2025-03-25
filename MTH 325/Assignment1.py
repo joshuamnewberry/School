@@ -65,4 +65,4 @@ print(Havel_Hakimi([5,5,5,5,4,3]), "| False")
 print(Havel_Hakimi([5,5,5,5,4,4]), "| True")
 
 #Havel_Hakimi([3,3,3,3,3,3,3,3,3,3]) should return True
-print(Havel_Hakimi([3,3,3,3,3,3,3,3,3,3],), "| True")
+print(Havel_Hakimi([3,3,3,3,3,3,3,3,3,3]), "| True")
