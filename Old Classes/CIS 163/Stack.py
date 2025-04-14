@@ -1,5 +1,4 @@
 from typing import Any
-from Queue import Queue
 
 class Stack:
     def __init__(self, lst:list = None) -> None:
