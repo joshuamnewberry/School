@@ -1,0 +1,1 @@
+Code developed as a part of school projects and assignments during college
