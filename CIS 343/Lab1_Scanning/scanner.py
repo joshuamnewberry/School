@@ -14,7 +14,7 @@ class Scanner:
             "false": TokenType.FALSE,
             "for": TokenType.FOR,
             "if": TokenType.IF,
-            "NULL": TokenType.NULL,
+            "null": TokenType.NULL,
             "or": TokenType.OR,
             "print": TokenType.PRINT,
             "return": TokenType.RETURN,
@@ -79,6 +79,11 @@ class Scanner:
         elif char == "/":
             if self.match("/"):
                 while self.peek() != "\n" and not self.is_at_end():
+                    self.advance()
+            elif self.match("*"):
+                while not (self.peek() == "*" and self.peek_next() == "/"):
+                    if char == "\n":
+                        self.line += 1
                     self.advance()
             else:
                 self.add_token(TokenType.SLASH)
