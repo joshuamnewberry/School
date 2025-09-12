@@ -52,8 +52,6 @@ class Scanner:
             self.add_token(TokenType.PLUS)
         elif char == ";":
             self.add_token(TokenType.SEMICOLON)
-        elif char == "/":
-            self.add_token(TokenType.SLASH)
         elif char == "*":
             self.add_token(TokenType.STAR)
         elif char == "!":
@@ -85,6 +83,8 @@ class Scanner:
                     if char == "\n":
                         self.line += 1
                     self.advance()
+                self.advance()
+                self.advance()
             else:
                 self.add_token(TokenType.SLASH)
         elif char == " " or char == "\r" or char == "\t":
