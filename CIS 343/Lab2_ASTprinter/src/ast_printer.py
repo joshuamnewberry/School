@@ -1,4 +1,5 @@
 from visitor import Visitor
+from expr import *
 
 class AstPrinter(Visitor):
     def print(self, expr):
