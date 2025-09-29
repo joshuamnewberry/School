@@ -1,0 +1,31 @@
+from error_handler import ErrorHandler, sys
+from scanner import Scanner
+
+class Noggin:
+    def run_file(self, path):
+        with open(path) as f:
+            self.run(f.read())
+    
+    def run_prompt(self):
+        try:
+            print(">>>>> PLox Interactive Shell <<<<<")
+            while True:
+                self.run(input("> "))
+        except KeyboardInterrupt:
+            print("\nExiting PLox Interactive Shell.")
+    
+    def run(self, source):
+        scanner = Scanner(source)
+        tokens = scanner.scan_tokens()
+        for token in tokens:
+            print(token)
+
+if __name__ == "__main__":
+    noggin = Noggin()
+    if len(sys.argv) > 2:
+        print("Usage: lox [script]")
+        sys.exit(64)
+    elif len(sys.argv) == 2:
+        noggin.run_file(sys.argv[1])
+    else:
+        noggin.run_prompt()
