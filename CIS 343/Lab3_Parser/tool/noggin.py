@@ -1,5 +1,7 @@
 from error_handler import ErrorHandler, sys
 from scanner import Scanner
+from parser import Parser
+from ast_printer import AstPrinter
 
 class Noggin:
     def run_file(self, path):
@@ -17,8 +19,12 @@ class Noggin:
     def run(self, source):
         scanner = Scanner(source)
         tokens = scanner.scan_tokens()
-        for token in tokens:
-            print(token)
+        parser = Parser(tokens)
+        expression = parser.parse()
+        if (ErrorHandler.had_error):
+            return
+        printer = AstPrinter()
+        print(printer.print(expression))
 
 if __name__ == "__main__":
     noggin = Noggin()
