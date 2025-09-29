@@ -1,4 +1,7 @@
-from error_handler import ErrorHandler, sys
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
+from error_handler import ErrorHandler
 from scanner import Scanner
 from parser import Parser
 from ast_printer import AstPrinter
