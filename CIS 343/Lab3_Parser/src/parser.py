@@ -99,13 +99,13 @@ class Parser:
     
     def match(self, *expected_types) -> bool:
         for type in expected_types:
-            if (not self.is_at_end) and self.tokens[self.current].type == type:
+            if (not self.is_at_end()) and self.tokens[self.current].type == type:
                 self.advance()
                 return True
         return False
 
     def check(self, expected_type) -> bool:
-        if (not self.is_at_end) and self.tokens[self.current].type == expected_type:
+        if (not self.is_at_end()) and self.tokens[self.current].type == expected_type:
             return True
         return False
     
