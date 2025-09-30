@@ -11,9 +11,11 @@ class Parser:
         self.line = 0
     
     def parse(self):
-        # Start parsing the tokens
         try:
-            return self.expression()
+            expr = self.expression()
+            if not self.is_at_end():
+                raise self.error(self.peek(), "Unexpected additional tokens after expression or improperly formatted expression.")
+            return expr
         except ParseError:
             return None
     
@@ -73,7 +75,7 @@ class Parser:
             expression = self.expression()
             self.consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.")
             return Grouping(expression)
-        raise self.error(self.peek(), "Expect expression.")
+        raise self.error(self.peek(), "Unexpected Token in expression")
     
     def consume(self, type, message):
         if self.check(type):
@@ -97,13 +99,13 @@ class Parser:
     
     def match(self, *expected_types) -> bool:
         for type in expected_types:
-            if self.tokens[self.current].type == type:
+            if (not self.is_at_end) and self.tokens[self.current].type == type:
                 self.advance()
                 return True
         return False
 
     def check(self, expected_type) -> bool:
-        if self.is_at_end() or self.tokens[self.current].type == expected_type:
+        if (not self.is_at_end) and self.tokens[self.current].type == expected_type:
             return True
         return False
     
@@ -112,11 +114,11 @@ class Parser:
         return self.tokens[self.current - 1]
     
     def is_at_end(self) -> bool:
-        return self.current >= len(self.tokens)
+        return self.current >= len(self.tokens)-1
     
-    def peek(self) -> Token | str:
+    def peek(self) -> Token | None:
         if self.is_at_end():
-            return "\0"
+            return None
         return self.tokens[self.current]
     
     def previous(self) -> Token:
