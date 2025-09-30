@@ -22,6 +22,8 @@ class Noggin:
     def run(self, source):
         scanner = Scanner(source)
         tokens = scanner.scan_tokens()
+        for token in tokens:
+            print(token)
         parser = Parser(tokens)
         expression = parser.parse()
         if (ErrorHandler.had_error):

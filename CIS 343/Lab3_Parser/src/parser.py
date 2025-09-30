@@ -46,7 +46,7 @@ class Parser:
     
     def factor(self):
         left = self.unary()
-        while self.match(TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL):
+        while self.match(TokenType.STAR, TokenType.SLASH):
             operator = self.previous()
             right = self.unary()
             left = Binary(left, operator, right)
@@ -61,7 +61,7 @@ class Parser:
         return self.primary()
     
     def primary(self):
-        if self.match(TokenType.NUMBER,TokenType.STRING):
+        if self.match(TokenType.NUMBER, TokenType.STRING):
             return Literal(self.previous().literal)
         if self.match(TokenType.TRUE):
             return Literal(True)
@@ -97,16 +97,15 @@ class Parser:
     
     def match(self, *expected_types) -> bool:
         for type in expected_types:
-            if self.is_at_end() or self.tokens[self.current] == type:
-                self.current += 1
+            if self.tokens[self.current].type == type:
+                self.advance()
                 return True
         return False
 
     def check(self, expected_type) -> bool:
-        if self.is_at_end() or self.tokens[self.current] != expected_type:
-            return False
-        self.current += 1
-        return True
+        if self.is_at_end() or self.tokens[self.current].type == expected_type:
+            return True
+        return False
     
     def advance(self) -> Token:
         self.current += 1
