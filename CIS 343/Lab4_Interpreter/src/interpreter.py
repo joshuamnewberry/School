@@ -61,7 +61,7 @@ class Interpreter(Visitor):
                 return left * right
             if expr.operator.lexeme == "/":
                 if right == 0:
-                    raise 
+                    raise NogginRuntimeError(right, "Cannot divide by zero")
                 return left / right
             if expr.operator.lexeme == "==":
                 return left == right
