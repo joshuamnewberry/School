@@ -24,7 +24,7 @@ class ErrorHandler:
 class ParseError(RuntimeError):
     pass
 
-class LoxRuntimeError(RuntimeError):
+class NogginRuntimeError(RuntimeError):
     def __init__(self, token, message):
         self.message = message
         self.token = token

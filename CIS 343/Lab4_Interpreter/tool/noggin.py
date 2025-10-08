@@ -14,13 +14,13 @@ class Noggin:
     
     def run_prompt(self):
         try:
-            print(">>>>> PLox Interactive Shell <<<<<")
+            print(">>>>> PNoggin Interactive Shell <<<<<")
             while True:
                 self.run(input("> "))
                 ErrorHandler.had_error = False
                 ErrorHandler.had_runtime_error = False
         except KeyboardInterrupt:
-            print("\nExiting PLox Interactive Shell.")
+            print("\nExiting PNoggin Interactive Shell.")
     
     def run(self, source):
         scanner = Scanner(source)
@@ -35,7 +35,7 @@ class Noggin:
 if __name__ == "__main__":
     noggin = Noggin()
     if len(sys.argv) > 2:
-        print("Usage: lox [script]")
+        print("Usage: Noggin [script]")
         sys.exit(64)
     elif len(sys.argv) == 2:
         noggin.run_file(sys.argv[1])

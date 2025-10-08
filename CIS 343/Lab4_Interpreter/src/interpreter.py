@@ -36,32 +36,52 @@ class Interpreter(Visitor):
     def visit_unary(self, expr:Unary):
         right = self.evaluate(expr.right)
         if expr.operator.lexeme == "-":
-            if isinstance(expr.right, float):
-                return -expr.right
+            if isinstance(right, float):
+                return -right
             else:
-                raise LoxRuntimeError(expr.operator, "Operands must be two numbers or two strings.")
+                raise NogginRuntimeError(expr.operator, "Operand must be a number")
         elif expr.operator.lexeme == "!":
-            return not self.is_truthy(expr.right)
-        raise LoxRuntimeError(expr.operator, f"Unsupported unary operator '{expr.operator.lexeme}'.")
+            return not self.is_truthy(right)
+        raise NogginRuntimeError(expr.operator, f"Unsupported unary operator '{expr.operator.lexeme}'.")
 
     def visit_binary(self, expr:Binary):
         left = self.evaluate(expr.left)
         right = self.evaluate(expr.right)
-        if isinstance(expr.left, str) and isinstance(expr.right, str):
+        if isinstance(left, str) and isinstance(right, str):
             if expr.operator.lexeme == "+":
-                return expr.left + expr.right
+                return left + right
             else:
-                raise LoxRuntimeError(expr.operator, "Strings can only use the \"+\" operator")
-        elif isinstance(expr.left, float) and isinstance(expr.right, float):
+                raise NogginRuntimeError(expr.operator, "Strings can only use the \"+\" operator")
+        elif isinstance(left, float) and isinstance(right, float):
             if expr.operator.lexeme == "+":
-                return expr.left + expr.right
+                return left + right
             if expr.operator.lexeme == "-":
-                return expr.left - expr.right
+                return left - right
             if expr.operator.lexeme == "*":
-                return expr.left * expr.right
+                return left * right
             if expr.operator.lexeme == "/":
-                return expr.left / expr.right
-            raise LoxRuntimeError(expr.operator, "Operands must be two numbers or two strings.")
+                if right == 0:
+                    raise 
+                return left / right
+            if expr.operator.lexeme == "==":
+                return left == right
+            if expr.operator.lexeme == "!=":
+                return left != right
+            if expr.operator.lexeme == ">":
+                return left > right
+            if expr.operator.lexeme == ">=":
+                return left >= right
+            if expr.operator.lexeme == "<":
+                return left < right
+            if expr.operator.lexeme == "<=":
+                return left <= right
+            raise NogginRuntimeError(expr.operator, "Unsupported binary operator for two floats")
+        elif expr.operator.lexeme == "==":
+            return left == right
+        elif expr.operator.lexeme == "!=":
+            return left != right
+        
+        raise NogginRuntimeError(expr, f"Unsupported binary operation '{expr.operator.lexeme}' for operands of type {type(left).__name__} and {type(right).__name__}.")
 
     def is_truthy(self, input:Any) -> bool:
         ## None -- False -- Empty String, List or Tuple -- Zero: False
