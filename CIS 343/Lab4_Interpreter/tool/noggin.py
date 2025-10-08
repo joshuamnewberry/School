@@ -5,6 +5,7 @@ from error_handler import ErrorHandler
 from scanner import Scanner
 from parser import Parser
 from ast_printer import AstPrinter
+from interpreter import Interpreter
 
 class Noggin:
     def run_file(self, path):
@@ -16,6 +17,8 @@ class Noggin:
             print(">>>>> PLox Interactive Shell <<<<<")
             while True:
                 self.run(input("> "))
+                ErrorHandler.had_error = False
+                ErrorHandler.had_runtime_error = False
         except KeyboardInterrupt:
             print("\nExiting PLox Interactive Shell.")
     
@@ -26,8 +29,8 @@ class Noggin:
         expression = parser.parse()
         if (ErrorHandler.had_error):
             return
-        printer = AstPrinter()
-        print(printer.print(expression))
+        interpreter = Interpreter()
+        interpreter.interpret(expression)
 
 if __name__ == "__main__":
     noggin = Noggin()

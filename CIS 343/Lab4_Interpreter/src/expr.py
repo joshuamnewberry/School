@@ -1,14 +1,17 @@
+from noggin_token import *
+from typing import List
+
 class Expr:
     pass
 
 class Binary(Expr):
-    def __init__(self, left, operator, right):
+    def __init__(self, left, operator:Token, right):
         self.left = left
         self.operator = operator
         self.right = right
 
 class Grouping(Expr):
-    def __init__(self, expression):
+    def __init__(self, expression:Expr):
         self.expression = expression
 
 class Literal(Expr):
@@ -16,6 +19,6 @@ class Literal(Expr):
         self.value = value
 
 class Unary(Expr):
-    def __init__(self, operator, right):
+    def __init__(self, operator:Token, right):
         self.operator = operator
         self.right = right

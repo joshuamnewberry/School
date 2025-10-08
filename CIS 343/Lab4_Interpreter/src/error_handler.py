@@ -4,6 +4,7 @@ from token_type import TokenType
 
 class ErrorHandler:
     had_error = False
+    had_runtime_error = False
     
     @staticmethod
     def error(err, message):
@@ -22,3 +23,14 @@ class ErrorHandler:
 
 class ParseError(RuntimeError):
     pass
+
+class LoxRuntimeError(RuntimeError):
+    def __init__(self, token, message):
+        self.message = message
+        self.token = token
+
+    @staticmethod
+    def runtime_error(error):
+        print(error.message)
+        print(f"[line {error.token.line}]")
+        ErrorHandler.had_runtime_error = True
