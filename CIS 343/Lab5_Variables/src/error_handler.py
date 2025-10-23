@@ -25,7 +25,7 @@ class ParseError(RuntimeError):
     pass
 
 class NogginRuntimeError(RuntimeError):
-    def __init__(self, token, message):
+    def __init__(self, token:Token, message):
         self.message = message
         self.token = token
 

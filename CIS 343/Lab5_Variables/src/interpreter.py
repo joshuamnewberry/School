@@ -61,7 +61,7 @@ class Interpreter(Visitor):
                 return left * right
             if expr.operator.lexeme == "/":
                 if right == 0:
-                    raise NogginRuntimeError(right, "Cannot divide by zero")
+                    raise NogginRuntimeError(expr.right, "Cannot divide by zero")
                 return left / right
             if expr.operator.lexeme == "==":
                 return left == right
@@ -80,8 +80,7 @@ class Interpreter(Visitor):
             return left == right
         elif expr.operator.lexeme == "!=":
             return left != right
-        
-        raise NogginRuntimeError(expr, f"Unsupported binary operation '{expr.operator.lexeme}' for operands of type {type(left).__name__} and {type(right).__name__}.")
+        raise NogginRuntimeError(expr.operator, f"Unsupported binary operation '{expr.operator.lexeme}' for operands of type {type(left).__name__} and {type(right).__name__}.")
 
     def is_truthy(self, input:Any) -> bool:
         ## None -- False -- Empty String, List or Tuple -- Zero: False
