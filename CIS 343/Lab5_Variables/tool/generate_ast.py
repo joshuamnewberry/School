@@ -34,10 +34,8 @@ if __name__ == "__main__":
         print("Usage: generate_ast [output directory]")
         sys.exit(64)
     output_dir = sys.argv[1]
-    define_ast(output_dir, "Expr", [
-        "Binary : left, operator, right",
-        "Grouping : expression",
-        "Literal : value",
-        "Unary : operator, right"
+    define_ast(output_dir, "Stmt", [
+        "Expression : expression",
+        "Print : expression",
     ])
     print("Generated expr.py")
