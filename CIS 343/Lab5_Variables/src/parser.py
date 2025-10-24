@@ -3,6 +3,7 @@ from error_handler import ErrorHandler, ParseError
 from token_type import TokenType
 from noggin_token import Token
 from expr import *
+from stmt import *
 
 class Parser:
     def __init__(self, tokens:List[Token]):
@@ -11,13 +12,34 @@ class Parser:
         self.line = 0
     
     def parse(self):
-        try:
-            expr = self.expression()
-            if not self.is_at_end():
-                raise self.error(self.peek(), "Unexpected additional tokens after expression or improperly formatted expression.")
-            return expr
-        except ParseError:
-            return None
+        statements = []
+        while (not self.is_at_end()) or (self.peek().type != TokenType.EOF):
+            try:
+                statements.append(self.statement())
+            except ParseError:
+                self.synchronize()
+        return statements
+    
+    def statement(self):
+        if self.match(TokenType.PRINT):
+            return self.printStatement()
+        else:
+            return self.expressionStatement()
+    
+    def printStatement(self):
+        self.consume(TokenType.LEFT_PAREN, "Expect '(' after print token")
+        expressions = []
+        expressions.append(self.expression())
+        while (not self.match(TokenType.RIGHT_PAREN)):
+            self.consume(TokenType.COMMA, "Expect ',' in between expressions")
+            expressions.append(self.expression())
+        self.consume(TokenType.SEMICOLON, "Expect ';' after print function.")
+        return Print(expressions)
+    
+    def expressionStatement(self):
+        expr = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after statement.")
+        return Expression(expr)
     
     def expression(self):
         return self.equality()
@@ -91,7 +113,7 @@ class Parser:
         while not self.is_at_end():
             if self.previous().type == TokenType.SEMICOLON:
                 return
-            if self.match(TokenType.CLASS, TokenType.DEF, TokenType.VAR,TokenType.FOR,
+            if self.match(TokenType.CLASS, TokenType.DEF, TokenType.VAR, TokenType.FOR,
                           TokenType.IF, TokenType.WHILE, TokenType.PRINT, TokenType.RETURN):
                 return
             self.advance()
@@ -116,9 +138,9 @@ class Parser:
     def is_at_end(self) -> bool:
         return self.current >= len(self.tokens)-1
     
-    def peek(self) -> Token | None:
+    def peek(self) -> Token:
         if self.is_at_end():
-            return None
+            return Token(TokenType.EOF, None, None, None)
         return self.tokens[self.current]
     
     def previous(self) -> Token:

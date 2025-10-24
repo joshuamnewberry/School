@@ -1,3 +1,6 @@
+from ast import Expr
+from typing import List
+
 class Stmt:
     pass
 
@@ -6,5 +9,5 @@ class Expression(Stmt):
         self.expression = expression
 
 class Print(Stmt):
-    def __init__(self, expression):
+    def __init__(self, expression:List):
         self.expression = expression
