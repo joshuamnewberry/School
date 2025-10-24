@@ -10,21 +10,41 @@ class Parser:
         self.tokens = tokens
         self.current = 0
         self.line = 0
+        self.statements = []
     
-    def parse(self):
-        statements = []
-        while (not self.is_at_end()) or (self.peek().type != TokenType.EOF):
+    def parse(self) -> Expression|List[Stmt]:
+        self.statements = []
+        while (not self.is_at_end()):
             try:
-                statements.append(self.statement())
+                self.statements.append(self.statement())
             except ParseError:
                 self.synchronize()
-        return statements
+        if len(self.statements) == 1 and isinstance(self.statements[0], Expression):
+            return self.statements[0]
+        return self.statements
     
     def statement(self):
         if self.match(TokenType.PRINT):
             return self.printStatement()
+        elif self.match(TokenType.DEF):
+            return self.varDeclaration()
+        elif self.check(TokenType.IDENTIFIER) and self.peek_next().type == TokenType.EQUAL:
+            self.advance()
+            return self.assignmentStatement()
+        elif self.match(TokenType.LEFT_BRACE):
+            return self.block()
         else:
             return self.expressionStatement()
+    
+    def block(self):
+        statements = []
+        while (not self.check(TokenType.RIGHT_BRACE)) and (not self.is_at_end()):
+            try:
+                statements.append(self.statement())
+            except ParseError:
+                self.synchronize()
+        self.consume(TokenType.RIGHT_BRACE, "Expect '}' at the end of block")
+        return Block(statements)
     
     def printStatement(self):
         self.consume(TokenType.LEFT_PAREN, "Expect '(' after print token")
@@ -38,9 +58,27 @@ class Parser:
     
     def expressionStatement(self):
         expr = self.expression()
+        if (self.match(TokenType.EOF) or self.is_at_end()) and len(self.statements) == 0:
+            return Expression(expr)
         self.consume(TokenType.SEMICOLON, "Expect ';' after statement.")
         return Expression(expr)
     
+    def assignmentStatement(self):
+        name = self.previous()
+        self.advance()
+        initializer = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after variable assignment")
+        return Def(name, initializer)
+    
+    def varDeclaration(self):
+        self.consume(TokenType.IDENTIFIER, "Expect variable name after def token")
+        name = self.previous()
+        initializer = None
+        if self.match(TokenType.EQUAL):
+            initializer = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after variable declaration")
+        return Assignment(name, initializer)
+
     def expression(self):
         return self.equality()
     
@@ -97,6 +135,8 @@ class Parser:
             expression = self.expression()
             self.consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.")
             return Grouping(expression)
+        if self.match(TokenType.IDENTIFIER):
+            return Variable(self.previous())
         raise self.error(self.peek(), "Unexpected Token in expression")
     
     def consume(self, type, message):
@@ -136,12 +176,17 @@ class Parser:
         return self.tokens[self.current - 1]
     
     def is_at_end(self) -> bool:
-        return self.current >= len(self.tokens)-1
+        return self.current >= len(self.tokens)
     
     def peek(self) -> Token:
         if self.is_at_end():
             return Token(TokenType.EOF, None, None, None)
         return self.tokens[self.current]
+    
+    def peek_next(self) -> Token:
+        if self.current + 1 >= len(self.tokens):
+            return Token(TokenType.EOF, None, None, None)
+        return self.tokens[self.current+1]
     
     def previous(self) -> Token:
         return self.tokens[self.current-1]

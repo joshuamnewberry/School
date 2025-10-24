@@ -22,3 +22,11 @@ class Unary(Expr):
     def __init__(self, operator:Token, right):
         self.operator = operator
         self.right = right
+
+class Variable(Expr):
+    def __init__(self, name):
+        self.name = name
+
+class Block(Expr):
+    def __init__(self, statements):
+        self.statements = statements

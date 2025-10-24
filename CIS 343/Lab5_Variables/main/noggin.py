@@ -26,11 +26,11 @@ class Noggin:
         scanner = Scanner(source)
         tokens = scanner.scan_tokens()
         parser = Parser(tokens)
-        expression = parser.parse()
+        statements = parser.parse()
         if (ErrorHandler.had_error):
             return
         interpreter = Interpreter()
-        interpreter.interpret(expression)
+        interpreter.interpret(statements)
 
 if __name__ == "__main__":
     noggin = Noggin()

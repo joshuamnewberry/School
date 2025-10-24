@@ -1,4 +1,5 @@
 from typing import Any, List
+from environment import Environment
 from expr import *
 from error_handler import *
 from stmt import *
@@ -8,8 +9,12 @@ class Interpreter(Visitor):
     def __init__(self):
         pass
 
-    def interpret(self, statements:List[Stmt]):
+    def interpret(self, statements:Expression|List[Stmt]):
         try:
+            if not isinstance(statements, List):
+                expr = self.evaluate(statements)
+                print(self.stringify(expr))
+                return
             for stmt in statements:
                 self.evaluate(stmt)
         except RuntimeError as error:
@@ -28,8 +33,8 @@ class Interpreter(Visitor):
             return "false"
         return str(input)
     
-    def visit_expression(self, expr:Expression):
-        self.evaluate(expr.expression)
+    def visit_expression(self, expressionObj:Expression):
+        self.evaluate(expressionObj.expression)
         return None
     
     def visit_print(self, printObj:Print):
@@ -38,6 +43,18 @@ class Interpreter(Visitor):
             res += self.stringify(self.evaluate(expr)) + " "
         print(res.strip())
         return None
+    
+    def visit_def(self, defObj:Def):
+        pass
+
+    def visit_variable(self, var:Variable):
+        pass
+
+    def visit_assignment(self, assignment:Assignment):
+        pass
+
+    def visit_block(self, block:Block):
+        pass
 
     def visit_literal(self, expr:Literal):
         return expr.value
