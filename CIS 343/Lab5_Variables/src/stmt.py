@@ -9,5 +9,5 @@ class Expression(Stmt):
         self.expression = expression
 
 class Print(Stmt):
-    def __init__(self, expression:List):
-        self.expression = expression
+    def __init__(self, exprList:List):
+        self.exprList = exprList

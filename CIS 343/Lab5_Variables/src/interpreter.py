@@ -1,21 +1,22 @@
-from typing import Any
+from typing import Any, List
 from expr import *
 from error_handler import *
+from stmt import *
 from visitor import Visitor
 
 class Interpreter(Visitor):
     def __init__(self):
         pass
 
-    def interpret(self, expr):
+    def interpret(self, statements:List[Stmt]):
         try:
-            value = self.evaluate(expr)
-            print(self.stringify(value))
+            for stmt in statements:
+                self.evaluate(stmt)
         except RuntimeError as error:
             ErrorHandler.error(error, "")
 
-    def evaluate(self, expr:Expr):
-        return self.visit(expr)
+    def evaluate(self, unknown):
+        return self.visit(unknown)
     
     def stringify(self, input:Any) -> str:
         output = ""
@@ -26,6 +27,17 @@ class Interpreter(Visitor):
         if input == False:
             return "false"
         return str(input)
+    
+    def visit_expression(self, expr:Expression):
+        self.evaluate(expr.expression)
+        return None
+    
+    def visit_print(self, printObj:Print):
+        res = ""
+        for expr in printObj.exprList:
+            res += self.stringify(self.evaluate(expr)) + " "
+        print(res.strip())
+        return None
 
     def visit_literal(self, expr:Literal):
         return expr.value
