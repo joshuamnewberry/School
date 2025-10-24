@@ -87,7 +87,7 @@ class Scanner:
                 self.advance()
             else:
                 self.add_token(TokenType.SLASH)
-        elif char == " " or char == "\r" or char == "\t":
+        elif char == " " or char == "\r" or char == "\t" or char == "\b" or char == "\f":
             pass
         elif char == "\n":
             self.line += 1
@@ -108,7 +108,8 @@ class Scanner:
         elif char.isalpha() or char == "_":
             self.identifier()
         else:
-            ErrorHandler.error(self.line, "Unexpected character.")
+            print(char)
+            ErrorHandler.error(self.line, f"Unexpected character: {char}")
     
     def advance(self):
         self.current += 1
