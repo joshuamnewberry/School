@@ -6,18 +6,20 @@ from stmt import *
 from visitor import Visitor
 
 class Interpreter(Visitor):
-    def __init__(self):
-        pass
+    def __init__(self, environment=None):
+        if environment is None:
+            environment = Environment()
+        self.environment = environment
 
     def interpret(self, statements:Expression|List[Stmt]):
         try:
             if not isinstance(statements, List):
-                expr = self.evaluate(statements)
+                expr = self.evaluate(statements.expression)
                 print(self.stringify(expr))
                 return
             for stmt in statements:
                 self.evaluate(stmt)
-        except RuntimeError as error:
+        except NogginRuntimeError as error:
             ErrorHandler.error(error, "")
 
     def evaluate(self, unknown):
@@ -45,16 +47,32 @@ class Interpreter(Visitor):
         return None
     
     def visit_def(self, defObj:Def):
-        pass
+        name = defObj.name
+        value = None
+        if defObj.initializer is not None:
+            value = self.evaluate(defObj.initializer)
+        self.environment.define(name, value)
+        return None
 
     def visit_variable(self, var:Variable):
-        pass
+        name = var.name
+        return self.environment.get(name)
 
-    def visit_assignment(self, assignment:Assignment):
-        pass
+    def visit_assignment(self, assign:Assignment):
+        name = assign.name.lexeme
+        value = self.evaluate(assign.expression)
+        self.environment.assign(assign.name, value)
+        return None
 
     def visit_block(self, block:Block):
-        pass
+        previous = self.environment
+        self.environment = Environment(previous)
+        try:
+            for stmt in block.statements:
+                self.evaluate(stmt)
+        finally:
+            self.environment = previous
+        return None
 
     def visit_literal(self, expr:Literal):
         return expr.value

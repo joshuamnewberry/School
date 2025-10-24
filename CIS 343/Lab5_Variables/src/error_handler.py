@@ -13,6 +13,8 @@ class ErrorHandler:
                 ErrorHandler.report(err.line, " at end", message)
             else:
                 ErrorHandler.report(err.line, f" at '{err.lexeme}'", message)
+        elif isinstance(err, NogginRuntimeError):
+            NogginRuntimeError.runtime_error(err)
         else:
             ErrorHandler.report(err, "", message)   
     
@@ -31,6 +33,7 @@ class NogginRuntimeError(RuntimeError):
 
     @staticmethod
     def runtime_error(error):
-        print(error.message)
-        print(f"[line {error.token.line}]")
+        print(f"Error: {error.message}")
+        if isinstance(error.token, Token):
+            print(f"[line {error.token.line}]")
         ErrorHandler.had_runtime_error = True

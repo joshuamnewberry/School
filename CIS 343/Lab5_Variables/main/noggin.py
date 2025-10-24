@@ -6,30 +6,31 @@ from scanner import Scanner
 from parser import Parser
 from ast_printer import AstPrinter
 from interpreter import Interpreter
+from environment import Environment
 
 class Noggin:
     def run_file(self, path):
+        environment = Environment()
         with open(path) as f:
-            self.run(f.read())
+            self.run(f.read(), environment)
     
     def run_prompt(self):
+        environment = Environment()
         try:
             print(">>>>> PNoggin Interactive Shell <<<<<")
             while True:
-                self.run(input("> "))
+                self.run(input("> "), environment)
                 ErrorHandler.had_error = False
                 ErrorHandler.had_runtime_error = False
         except KeyboardInterrupt:
             print("\nExiting PNoggin Interactive Shell.")
     
-    def run(self, source):
+    def run(self, source, environment):
         scanner = Scanner(source)
         tokens = scanner.scan_tokens()
         parser = Parser(tokens)
         statements = parser.parse()
-        if (ErrorHandler.had_error):
-            return
-        interpreter = Interpreter()
+        interpreter = Interpreter(environment)
         interpreter.interpret(statements)
 
 if __name__ == "__main__":

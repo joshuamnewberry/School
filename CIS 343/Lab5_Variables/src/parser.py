@@ -51,6 +51,8 @@ class Parser:
         expressions = []
         expressions.append(self.expression())
         while (not self.match(TokenType.RIGHT_PAREN)):
+            if self.check(TokenType.SEMICOLON):
+                raise self.error(self.peek(), "Expect ')' before ';'")
             self.consume(TokenType.COMMA, "Expect ',' in between expressions")
             expressions.append(self.expression())
         self.consume(TokenType.SEMICOLON, "Expect ';' after print function.")
@@ -58,8 +60,10 @@ class Parser:
     
     def expressionStatement(self):
         expr = self.expression()
-        if (self.match(TokenType.EOF) or self.is_at_end()) and len(self.statements) == 0:
+        if self.is_at_end() and len(self.statements) == 0:
             return Expression(expr)
+        if self.check(TokenType.EQUAL):
+            raise self.error(self.peek(), "Invalid assignment target")
         self.consume(TokenType.SEMICOLON, "Expect ';' after statement.")
         return Expression(expr)
     
@@ -68,7 +72,7 @@ class Parser:
         self.advance()
         initializer = self.expression()
         self.consume(TokenType.SEMICOLON, "Expect ';' after variable assignment")
-        return Def(name, initializer)
+        return Assignment(name, initializer)
     
     def varDeclaration(self):
         self.consume(TokenType.IDENTIFIER, "Expect variable name after def token")
@@ -77,7 +81,7 @@ class Parser:
         if self.match(TokenType.EQUAL):
             initializer = self.expression()
         self.consume(TokenType.SEMICOLON, "Expect ';' after variable declaration")
-        return Assignment(name, initializer)
+        return Def(name, initializer)
 
     def expression(self):
         return self.equality()
@@ -149,43 +153,44 @@ class Parser:
         return ParseError()
     
     def synchronize(self):
-        self.advance()
+        if not self.is_at_end():
+            self.advance()
         while not self.is_at_end():
             if self.previous().type == TokenType.SEMICOLON:
                 return
             if self.match(TokenType.CLASS, TokenType.DEF, TokenType.VAR, TokenType.FOR,
-                          TokenType.IF, TokenType.WHILE, TokenType.PRINT, TokenType.RETURN):
+                          TokenType.IF, TokenType.WHILE, TokenType.PRINT, TokenType.RETURN, TokenType.EOF):
                 return
             self.advance()
         return
     
     def match(self, *expected_types) -> bool:
         for type in expected_types:
-            if (not self.is_at_end()) and self.tokens[self.current].type == type:
+            if self.peek().type == type:
                 self.advance()
                 return True
         return False
 
     def check(self, expected_type) -> bool:
-        if (not self.is_at_end()) and self.tokens[self.current].type == expected_type:
+        if self.peek().type == expected_type:
             return True
         return False
     
     def advance(self) -> Token:
         self.current += 1
-        return self.tokens[self.current - 1]
+        return self.tokens[self.current-1]
     
     def is_at_end(self) -> bool:
-        return self.current >= len(self.tokens)
+        return self.peek().type == TokenType.EOF
     
     def peek(self) -> Token:
-        if self.is_at_end():
-            return Token(TokenType.EOF, None, None, None)
+        if self.current >= len(self.tokens):
+            return Token(TokenType.EOF, "", None, self.line)
         return self.tokens[self.current]
     
     def peek_next(self) -> Token:
-        if self.current + 1 >= len(self.tokens):
-            return Token(TokenType.EOF, None, None, None)
+        if self.current >= len(self.tokens):
+            return Token(TokenType.EOF, "", None, self.line)
         return self.tokens[self.current+1]
     
     def previous(self) -> Token:

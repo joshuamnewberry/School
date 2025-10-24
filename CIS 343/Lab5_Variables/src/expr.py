@@ -24,7 +24,7 @@ class Unary(Expr):
         self.right = right
 
 class Variable(Expr):
-    def __init__(self, name):
+    def __init__(self, name:Token):
         self.name = name
 
 class Block(Expr):
