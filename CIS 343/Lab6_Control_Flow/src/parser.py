@@ -24,17 +24,41 @@ class Parser:
         return self.statements
     
     def statement(self):
-        if self.match(TokenType.PRINT):
+        if self.match(TokenType.PRINT): ## Print
             return self.printStatement()
-        elif self.match(TokenType.DEF):
+        elif self.match(TokenType.DEF): ## Declare
             return self.varDeclaration()
-        elif self.check(TokenType.IDENTIFIER) and self.peek_next().type == TokenType.EQUAL:
+        elif self.check(TokenType.IDENTIFIER) and self.peek_next().type == TokenType.EQUAL: ## Assign
             self.advance()
             return self.assignmentStatement()
-        elif self.match(TokenType.LEFT_BRACE):
+        elif self.match(TokenType.LEFT_BRACE): ## Block
             return self.block()
-        else:
+        elif self.match(TokenType.IF):
+            self.ifStatement()
+        else: ## Expression of some other kind
             return self.expressionStatement()
+    
+    def ifStatement(self):
+        self.consume(TokenType.LEFT_PAREN, "Expect '(' after if token")
+        expression = self.expression()
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after if condition")
+        self.consume(TokenType.LEFT_BRACE, "Expect '{' before if statement contents")
+        block = self.block()
+        if(self.match(TokenType.ELSE)):
+            if(self.match(TokenType.IF)):
+                return If(expression, block, self.ifStatement())
+            self.consume(TokenType.LEFT_BRACE, "Expect '{' before else statement contents")
+            else_block = self.block()
+            return If(expression, block, Else(else_block))
+        return If(expression, block)
+    
+    def whileStatement(self):
+        self.consume(TokenType.LEFT_PAREN, "Expect '(' after while token")
+        expression = self.expression()
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after while expression")
+        self.consume(TokenType.LEFT_BRACE, "Expect '{' before while statement contents")
+        block = self.block()
+        return While(expression, block)
     
     def block(self):
         statements = []
