@@ -1,3 +1,4 @@
+from re import X
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
@@ -26,6 +27,7 @@ class Noggin:
             print("\nExiting PNoggin Interactive Shell.")
     
     def run(self, source, environment):
+        print(1 == True)
         scanner = Scanner(source)
         tokens = scanner.scan_tokens()
         parser = Parser(tokens)

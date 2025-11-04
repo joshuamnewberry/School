@@ -23,7 +23,7 @@ class Parser:
             return self.statements[0]
         return self.statements
     
-    def statement(self):
+    def statement(self) -> Print|Def|Assignment|Block|If|While|Expression:
         if self.match(TokenType.PRINT): ## Print
             return self.printStatement()
         elif self.match(TokenType.DEF): ## Declare
@@ -33,53 +33,54 @@ class Parser:
             return self.assignmentStatement()
         elif self.match(TokenType.LEFT_BRACE): ## Block
             return self.block()
-        elif self.match(TokenType.IF):
-            self.ifStatement()
-        elif self.match(TokenType.WHILE):
-            self.whileStatement()
-        elif self.match(TokenType.FOR):
-            self.forStatement()
+        elif self.match(TokenType.IF): ## If
+            return self.ifStatement()
+        elif self.match(TokenType.WHILE): ## While
+            return self.whileStatement()
+        elif self.match(TokenType.FOR): ## For
+            return self.forStatement()
         else: ## Expression of some other kind
             return self.expressionStatement()
     
     def ifStatement(self):
         self.consume(TokenType.LEFT_PAREN, "Expect '(' after if token")
-        expression = self.expression()
+        condition = self.expression()
         self.consume(TokenType.RIGHT_PAREN, "Expect ')' after if condition")
         self.consume(TokenType.LEFT_BRACE, "Expect '{' before if statement contents")
         block = self.block()
         if self.match(TokenType.ELSE):
             if self.match(TokenType.IF):
-                return If(expression, block, self.ifStatement())
+                return If(condition, block, self.ifStatement())
             self.consume(TokenType.LEFT_BRACE, "Expect '{' before else statement contents")
             else_block = self.block()
-            return If(expression, block, Else(else_block))
-        return If(expression, block)
+            return If(condition, block, Else(else_block))
+        return If(condition, block)
     
     def whileStatement(self):
         self.consume(TokenType.LEFT_PAREN, "Expect '(' after while token")
-        expression = self.expression()
+        condition = self.expression()
         self.consume(TokenType.RIGHT_PAREN, "Expect ')' after while expression")
         self.consume(TokenType.LEFT_BRACE, "Expect '{' before while statement contents")
         block = self.block()
-        return While(expression, block)
+        return While(condition, block)
     
     def forStatement(self):
         self.consume(TokenType.LEFT_PAREN, "Expect '(' after for token")
         definition = None
         if self.match(TokenType.DEF):
             definition = self.varDeclaration()
-        expression = self.expressionStatement()
+        condition = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after loop condition")
         modifier = self.statement()
         self.consume(TokenType.RIGHT_PAREN, "Expect ')' after for expression")
         self.consume(TokenType.LEFT_BRACE, "Expect '{' before for statement contents")
         block = self.block()
         if definition:
             return Block([definition, # Define
-                          While(expression, #  While Loop
+                          While(condition, #  While Loop
                                 Block([block, # Internal For Loop code
                                        modifier]))]) # Code running in between loops
-        return Block([While(expression, #  While Loop
+        return Block([While(condition, #  While Loop
                             Block([block, # Internal For Loop code
                                    modifier]))]) # Code running in between loops
     

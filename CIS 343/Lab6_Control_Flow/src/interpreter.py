@@ -15,7 +15,6 @@ class Interpreter(Visitor):
         try:
             if not isinstance(statements, List):
                 expr = self.evaluate(statements.expression)
-                print(self.stringify(expr))
                 return
             for stmt in statements:
                 self.evaluate(stmt)
@@ -29,10 +28,11 @@ class Interpreter(Visitor):
         output = ""
         if input == None:
             return "null"
-        if input == True:
-            return "true"
-        if input == False:
-            return "false"
+        if isinstance(input, bool):
+            if input == True:
+                return "true"
+            if input == False:
+                return "false"
         return str(input)
     
     def visit_expression(self, expressionObj:Expression):
@@ -43,7 +43,7 @@ class Interpreter(Visitor):
         res = ""
         for expr in printObj.exprList:
             res += self.stringify(self.evaluate(expr)) + " "
-        print(res.strip())
+        print(res)
         return None
     
     def visit_def(self, defObj:Def):
