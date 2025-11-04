@@ -25,8 +25,8 @@ class Assignment(Stmt):
         self.expression = expression
 
 class If(Stmt):
-    def __init__(self, expression, block:Block, Else:None|If|Else = None):
-        self.expression = expression
+    def __init__(self, condition, block:Block, Else:None|If|Else = None):
+        self.condition = condition
         self.block = block
         self.Else = Else
 
@@ -35,6 +35,6 @@ class Else(Stmt):
         self.block = block
 
 class While(Stmt):
-    def __init__(self, expression, block:Block):
-        self.expression = expression
+    def __init__(self, condition, block:Block):
+        self.condition = condition
         self.block = block

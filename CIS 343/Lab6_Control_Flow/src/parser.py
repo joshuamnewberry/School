@@ -35,6 +35,10 @@ class Parser:
             return self.block()
         elif self.match(TokenType.IF):
             self.ifStatement()
+        elif self.match(TokenType.WHILE):
+            self.whileStatement()
+        elif self.match(TokenType.FOR):
+            self.forStatement()
         else: ## Expression of some other kind
             return self.expressionStatement()
     
@@ -44,8 +48,8 @@ class Parser:
         self.consume(TokenType.RIGHT_PAREN, "Expect ')' after if condition")
         self.consume(TokenType.LEFT_BRACE, "Expect '{' before if statement contents")
         block = self.block()
-        if(self.match(TokenType.ELSE)):
-            if(self.match(TokenType.IF)):
+        if self.match(TokenType.ELSE):
+            if self.match(TokenType.IF):
                 return If(expression, block, self.ifStatement())
             self.consume(TokenType.LEFT_BRACE, "Expect '{' before else statement contents")
             else_block = self.block()
@@ -59,6 +63,25 @@ class Parser:
         self.consume(TokenType.LEFT_BRACE, "Expect '{' before while statement contents")
         block = self.block()
         return While(expression, block)
+    
+    def forStatement(self):
+        self.consume(TokenType.LEFT_PAREN, "Expect '(' after for token")
+        definition = None
+        if self.match(TokenType.DEF):
+            definition = self.varDeclaration()
+        expression = self.expressionStatement()
+        modifier = self.statement()
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after for expression")
+        self.consume(TokenType.LEFT_BRACE, "Expect '{' before for statement contents")
+        block = self.block()
+        if definition:
+            return Block([definition, # Define
+                          While(expression, #  While Loop
+                                Block([block, # Internal For Loop code
+                                       modifier]))]) # Code running in between loops
+        return Block([While(expression, #  While Loop
+                            Block([block, # Internal For Loop code
+                                   modifier]))]) # Code running in between loops
     
     def block(self):
         statements = []
@@ -108,7 +131,23 @@ class Parser:
         return Def(name, initializer)
 
     def expression(self):
-        return self.equality()
+        return self.logical_or()
+    
+    def logical_or(self):
+        left = self.logical_and()
+        while(self.match(TokenType.OR)):
+            operator = self.previous()
+            right = self.logical_or()
+            left = Binary(left, operator, right)
+        return left
+    
+    def logical_and(self):
+        left = self.equality()
+        while(self.match(TokenType.AND)):
+            operator = self.previous()
+            right = self.equality()
+            left = Binary(left, operator, right)
+        return left
     
     def equality(self):
         left = self.comparison()

@@ -63,6 +63,21 @@ class Interpreter(Visitor):
         value = self.evaluate(assign.expression)
         self.environment.assign(assign.name, value)
         return None
+    
+    def visit_if(self, If:If):
+        if self.is_truthy(self.evaluate(If.condition)):
+            self.evaluate(If.block)
+        elif If.Else is not None:
+            if isinstance(If.Else, Else):
+                self.evaluate(If.Else.block)
+            else:
+                self.visit_if(If.Else)
+        return None
+    
+    def visit_while(self, While:While):
+        while(self.is_truthy(self.evaluate(While.condition))):
+            self.evaluate(While.block)
+        return None
 
     def visit_block(self, block:Block):
         previous = self.environment
@@ -93,6 +108,19 @@ class Interpreter(Visitor):
 
     def visit_binary(self, expr:Binary):
         left = self.evaluate(expr.left)
+        if expr.operator.type == TokenType.OR:
+            if self.is_truthy(left):
+                return left
+            right = self.evaluate(expr.right)
+            if self.is_truthy(right):
+                return right
+            return False
+        elif expr.operator.type == TokenType.AND:
+            if self.is_truthy(left):
+                right = self.evaluate(expr.right)
+                if self.is_truthy(right):
+                    return True
+            return False
         right = self.evaluate(expr.right)
         if isinstance(left, str) and isinstance(right, str):
             if expr.operator.lexeme == "+":

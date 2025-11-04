@@ -28,5 +28,5 @@ class Variable(Expr):
         self.name = name
 
 class Block(Expr):
-    def __init__(self, statements):
+    def __init__(self, statements:List):
         self.statements = statements
