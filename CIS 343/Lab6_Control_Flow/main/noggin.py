@@ -27,7 +27,6 @@ class Noggin:
             print("\nExiting PNoggin Interactive Shell.")
     
     def run(self, source, environment):
-        print(1 == True)
         scanner = Scanner(source)
         tokens = scanner.scan_tokens()
         parser = Parser(tokens)

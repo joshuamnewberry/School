@@ -75,16 +75,13 @@ class Parser:
         self.consume(TokenType.RIGHT_PAREN, "Expect ')' after for expression")
         self.consume(TokenType.LEFT_BRACE, "Expect '{' before for statement contents")
         block = self.block()
+        block.statements.append(modifier)
         if definition:
             return Block([definition, # Define
-                          While(condition, #  While Loop
-                                Block([block, # Internal For Loop code
-                                       modifier]))]) # Code running in between loops
-        return Block([While(condition, #  While Loop
-                            Block([block, # Internal For Loop code
-                                   modifier]))]) # Code running in between loops
+                          While(condition, block)])
+        return Block([While(condition, block)])
     
-    def block(self):
+    def block(self) -> Block:
         statements = []
         while (not self.check(TokenType.RIGHT_BRACE)) and (not self.is_at_end()):
             try:

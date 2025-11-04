@@ -15,6 +15,7 @@ class Interpreter(Visitor):
         try:
             if not isinstance(statements, List):
                 expr = self.evaluate(statements.expression)
+                print(expr)
                 return
             for stmt in statements:
                 self.evaluate(stmt)
