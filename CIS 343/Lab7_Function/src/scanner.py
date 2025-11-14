@@ -21,7 +21,6 @@ class Scanner:
             "super": TokenType.SUPER,
             "this": TokenType.THIS,
             "true": TokenType.TRUE,
-            "var": TokenType.VAR,
             "while": TokenType.WHILE
         }
         self.current = 0

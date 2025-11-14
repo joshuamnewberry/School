@@ -25,10 +25,15 @@ class Assignment(Stmt):
         self.expression = expression
 
 class Function(Stmt):
-    def __init__(self, name:Token, arguments:List, block:Block):
+    def __init__(self, name:Token, parameters:List, block:Block):
         self.name = name
-        self.arguments = arguments
+        self.parameters = parameters
         self.block = block
+
+class Return(Stmt):
+    def __init__(self, keyword:Token, value=None):
+        self.keyword = keyword
+        self.value = value
 
 class If(Stmt):
     def __init__(self, condition, block:Block, Else:None|If|Else = None):

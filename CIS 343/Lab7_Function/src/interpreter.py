@@ -1,4 +1,3 @@
-from logging.config import IDENTIFIER
 from typing import Any, List
 from environment import *
 from expr import *
@@ -6,7 +5,7 @@ from error_handler import *
 from stmt import *
 from visitor import *
 from callable import *
-import time
+from time import time
 
 class Interpreter(Visitor):
     def __init__(self, environment=None):
@@ -15,7 +14,7 @@ class Interpreter(Visitor):
         self.environment = environment
         class ClockCallable(NogginCallable):
             def call(self, interpreter, arguments):
-                return time.time()
+                return time()
             def arity(self):
                 return 0
             def __str__(self):
@@ -51,6 +50,9 @@ class Interpreter(Visitor):
         self.evaluate(expressionObj.expression)
         return None
     
+    def visit_function(self, function:Function):
+        self.environment.define(function.name, NogginFunction(function))
+
     def visit_call(self, call:Call):
         callee = self.evaluate(call.callee)
         if not isinstance(callee, NogginCallable):
@@ -60,6 +62,12 @@ class Interpreter(Visitor):
             raise NogginRuntimeError(call.right_paren, f"Expected {expected} arguments but got {len(call.arguments)}.")
         arguments = [self.evaluate(arg) for arg in call.arguments]
         return callee.call(self, arguments)
+    
+    def visit_return(self, stmt):
+        value = None
+        if stmt.value is not None:
+            value = self.evaluate(stmt.value)
+        raise NogginReturn(value)
     
     def visit_print(self, printObj:Print):
         res = ""

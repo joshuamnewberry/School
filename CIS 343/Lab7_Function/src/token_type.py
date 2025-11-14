@@ -11,7 +11,7 @@ TokenType = Enum(
         'LESS', 'LESS_EQUAL',
         'IDENTIFIER', 'STRING', 'NUMBER',
         'AND', 'CLASS', 'DEF', 'ELSE', 'FALSE', 'FOR', 'IF', 'NULL', 'OTHER', 'OR',
-        'PRINT', 'RETURN', 'SUPER', 'THIS', 'TRUE', 'VAR', 'WHILE',
+        'PRINT', 'RETURN', 'SUPER', 'THIS', 'TRUE', 'WHILE',
         'EOF'
     ]
 )

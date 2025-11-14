@@ -23,11 +23,11 @@ class Parser:
             return self.statements[0]
         return self.statements
     
-    def statement(self) -> Print|Def|Assignment|Block|If|While|Expression:
+    def statement(self) -> Print|Def|Function|Assignment|Block|If|While|Return|Expression:
         if self.match(TokenType.PRINT): ## Print
             return self.printStatement()
-        elif self.match(TokenType.DEF): ## Declare
-            return self.varDeclaration()
+        elif self.match(TokenType.DEF): ## Declare and Function
+            return self.declaration()
         elif self.check(TokenType.IDENTIFIER) and self.peek_next().type == TokenType.EQUAL: ## Assign
             self.advance()
             return self.assignmentStatement()
@@ -39,8 +39,34 @@ class Parser:
             return self.whileStatement()
         elif self.match(TokenType.FOR): ## For
             return self.forStatement()
+        elif self.match(TokenType.RETURN):
+            return self.returnStatement()
         else: ## Expression of some other kind
             return self.expressionStatement()
+    
+    def declaration(self):
+        self.consume(TokenType.IDENTIFIER, "Expect variable or function name after def token")
+        if self.peek().type == TokenType.LEFT_PAREN:
+            return self.function()
+        return self.varDeclaration()
+    
+    def function(self):
+        name = self.previous()
+        self.advance()
+        parameters = self.parameters()
+        self.consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters of function")
+        self.consume(TokenType.LEFT_BRACE, "Expect '{' before contents of function")
+        block = self.block()
+        return Function(name, parameters, block)
+
+    def parameters(self):
+        parameters = []
+        if self.match(TokenType.IDENTIFIER):
+            parameters.append(self.previous())
+            while self.match(TokenType.COMMA):
+                self.advance()
+                parameters.append(self.previous())
+        return parameters
     
     def ifStatement(self):
         self.consume(TokenType.LEFT_PAREN, "Expect '(' after if token")
@@ -120,13 +146,20 @@ class Parser:
         return Assignment(name, initializer)
     
     def varDeclaration(self):
-        self.consume(TokenType.IDENTIFIER, "Expect variable name after def token")
         name = self.previous()
         initializer = None
         if self.match(TokenType.EQUAL):
             initializer = self.expression()
         self.consume(TokenType.SEMICOLON, "Expect ';' after variable declaration")
         return Def(name, initializer)
+    
+    def returnStatement(self):
+        keyword = self.previous()
+        value = None
+        if not self.check(TokenType.SEMICOLON):
+            value = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after return.")
+        return Return(keyword, value)
 
     def expression(self):
         return self.logical_or()
@@ -236,7 +269,7 @@ class Parser:
         while not self.is_at_end():
             if self.previous().type == TokenType.SEMICOLON:
                 return
-            if self.match(TokenType.CLASS, TokenType.DEF, TokenType.VAR, TokenType.FOR,
+            if self.match(TokenType.CLASS, TokenType.DEF, TokenType.FOR,
                           TokenType.IF, TokenType.WHILE, TokenType.PRINT, TokenType.RETURN, TokenType.EOF):
                 return
             self.advance()

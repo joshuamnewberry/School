@@ -37,3 +37,7 @@ class NogginRuntimeError(RuntimeError):
         if isinstance(error.token, Token):
             print(f"[line {error.token.line}]")
         ErrorHandler.had_runtime_error = True
+
+class NogginReturn(RuntimeError):
+    def __init__(self, value):
+        self.value = value
