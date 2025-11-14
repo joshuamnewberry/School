@@ -16,10 +16,26 @@ class Interpreter(Visitor):
             def call(self, interpreter, arguments):
                 return time()
             def arity(self):
-                return 0
+                return 
+            def __str__(self):
+                return "<native fn>"
+        class MinCallable(NogginCallable):
+            def call(self, interpreter, arguments):
+                return min(arguments[0], arguments[1])
+            def arity(self):
+                return 2
+            def __str__(self):
+                return "<native fn>"
+        class MaxCallable(NogginCallable):
+            def call(self, interpreter, arguments):
+                return max(arguments[0], arguments[1])
+            def arity(self):
+                return 2
             def __str__(self):
                 return "<native fn>"
         self.environment.define(Token(TokenType.IDENTIFIER, "clock", "clock", None), ClockCallable())
+        self.environment.define(Token(TokenType.IDENTIFIER, "min", "min", None), MinCallable())
+        self.environment.define(Token(TokenType.IDENTIFIER, "max", "max", None), MaxCallable())
 
     def interpret(self, statements:Expression|List[Stmt]):
         try:
