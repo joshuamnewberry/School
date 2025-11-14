@@ -185,7 +185,24 @@ class Parser:
             right = self.unary()
             right = Unary(operator, right)
             return right
-        return self.primary()
+        return self.call()
+    
+    def call(self):
+        left = self.primary()
+        while self.match(TokenType.LEFT_PAREN):
+            arguments = self.arguments()
+            self.consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments.")
+            left = Call(left, arguments, self.previous())
+        return left
+
+    def arguments(self):
+        if self.check(TokenType.RIGHT_PAREN):
+            return []
+        expressions = []
+        expressions.append(self.expression())
+        while(self.match(TokenType.COMMA)):
+            expressions.append(self.expression())
+        return expressions
     
     def primary(self):
         if self.match(TokenType.NUMBER, TokenType.STRING):
@@ -202,7 +219,7 @@ class Parser:
             return Grouping(expression)
         if self.match(TokenType.IDENTIFIER):
             return Variable(self.previous())
-        raise self.error(self.peek(), "Unexpected Token in expression")
+        raise self.error(self.peek(), "Unexpected Token in expression.")
     
     def consume(self, type, message):
         if self.check(type):

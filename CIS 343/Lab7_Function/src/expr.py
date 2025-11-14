@@ -1,3 +1,4 @@
+from __future__ import annotations
 from noggin_token import *
 from typing import List
 
@@ -22,6 +23,12 @@ class Unary(Expr):
     def __init__(self, operator:Token, right):
         self.operator = operator
         self.right = right
+
+class Call(Expr):
+    def __init__(self, callee:Call, arguments:List, right_paren:Token):
+        self.callee = callee
+        self.arguments = arguments
+        self.right_paren = right_paren
 
 class Variable(Expr):
     def __init__(self, name:Token):

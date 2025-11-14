@@ -1,15 +1,26 @@
+from logging.config import IDENTIFIER
 from typing import Any, List
-from environment import Environment
+from environment import *
 from expr import *
 from error_handler import *
 from stmt import *
-from visitor import Visitor
+from visitor import *
+from callable import *
+import time
 
 class Interpreter(Visitor):
     def __init__(self, environment=None):
         if environment is None:
             environment = Environment()
         self.environment = environment
+        class ClockCallable(NogginCallable):
+            def call(self, interpreter, arguments):
+                return time.time()
+            def arity(self):
+                return 0
+            def __str__(self):
+                return "<native fn>"
+        self.environment.define(Token(TokenType.IDENTIFIER, "clock", "clock", None), ClockCallable())
 
     def interpret(self, statements:Expression|List[Stmt]):
         try:
@@ -39,6 +50,16 @@ class Interpreter(Visitor):
     def visit_expression(self, expressionObj:Expression):
         self.evaluate(expressionObj.expression)
         return None
+    
+    def visit_call(self, call:Call):
+        callee = self.evaluate(call.callee)
+        if not isinstance(callee, NogginCallable):
+            raise NogginRuntimeError(call.right_paren, "Expected a defined function")
+        expected = callee.arity()
+        if expected is not None and expected != len(call.arguments):
+            raise NogginRuntimeError(call.right_paren, f"Expected {expected} arguments but got {len(call.arguments)}.")
+        arguments = [self.evaluate(arg) for arg in call.arguments]
+        return callee.call(self, arguments)
     
     def visit_print(self, printObj:Print):
         res = ""

@@ -24,6 +24,12 @@ class Assignment(Stmt):
         self.name = name
         self.expression = expression
 
+class Function(Stmt):
+    def __init__(self, name:Token, arguments:List, block:Block):
+        self.name = name
+        self.arguments = arguments
+        self.block = block
+
 class If(Stmt):
     def __init__(self, condition, block:Block, Else:None|If|Else = None):
         self.condition = condition
