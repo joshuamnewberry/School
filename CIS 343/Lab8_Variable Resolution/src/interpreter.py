@@ -11,7 +11,9 @@ class Interpreter(Visitor):
     def __init__(self, environment=None):
         if environment is None:
             environment = Environment()
-        self.environment = environment
+        self.globals = environment
+        self.environment = self.globals
+        self.locals = {}
         class ClockCallable(NogginCallable):
             def call(self, interpreter, arguments):
                 return time()
@@ -62,6 +64,15 @@ class Interpreter(Visitor):
                 return "false"
         return str(input)
     
+    def resolve(self, expr, depth):
+        self.locals[expr] = depth
+    
+    def lookup_variable(self, name, expr):
+        distance = self.locals.get(expr)
+        if distance is not None:
+            return self.environment.get_at(distance, name.lexeme)
+        return self.globals.get(name)
+    
     def visit_expression(self, expressionObj:Expression):
         self.evaluate(expressionObj.expression)
         return None
@@ -101,13 +112,21 @@ class Interpreter(Visitor):
         return None
 
     def visit_variable(self, var:Variable):
-        name = var.name
-        return self.environment.get(name)
+        return self.lookup_variable(var.name, var)
 
     def visit_assignment(self, assign:Assignment):
         name = assign.name.lexeme
         value = self.evaluate(assign.expression)
         self.environment.assign(assign.name, value)
+        return None
+    
+    def visit_assign(self, expr):
+        value = self.evaluate(expr.value)
+        distance = self.locals.get(expr)
+        if distance is not None:
+            self.environment.assign_at(distance, expr.name, value)
+        else:
+            self.globals.assign(expr.name, value)
         return None
     
     def visit_if(self, If:If):

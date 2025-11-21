@@ -1,3 +1,4 @@
+from __future__ import annotations
 from noggin_token import *
 from error_handler import *
 from typing import Any
@@ -17,6 +18,18 @@ class Environment:
             return self.parent.get(name)
         else:
             raise NogginRuntimeError(name, f"Variable {name.lexeme} has no value (no variable declaration)")
+    
+    def get_at(self, distance, name):
+        return self.ancestor(distance).dict.get(name)
+    
+    def ancestor(self, distance) -> Environment:
+        environment = self
+        for _ in range(distance):
+            if isinstance(environment, Environment):
+                environment = environment.parent
+        if isinstance(environment, Environment):
+            return environment
+        return Environment()
 
     def assign (self, name:Token, value):
         if name.lexeme in self.dict.keys():
@@ -25,3 +38,6 @@ class Environment:
             self.parent.assign(name, value)
         else:
             raise NogginRuntimeError(name, f"Variable {name.lexeme} has not been declared")
+    
+    def assign_at(self, distance, name, value):
+        self.ancestor(distance).dict[name.lexeme] = value

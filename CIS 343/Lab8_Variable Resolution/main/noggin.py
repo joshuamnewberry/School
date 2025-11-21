@@ -8,6 +8,7 @@ from parser import Parser
 from ast_printer import AstPrinter
 from interpreter import Interpreter
 from environment import Environment
+from resolver import Resolver
 
 class Noggin:
     def run_file(self, path):
@@ -31,7 +32,13 @@ class Noggin:
         tokens = scanner.scan_tokens()
         parser = Parser(tokens)
         statements = parser.parse()
+        if (ErrorHandler.had_error):
+            return
         interpreter = Interpreter(environment)
+        resolver = Resolver(interpreter)
+        resolver.resolve(statements)
+        if (ErrorHandler.had_error):
+            return
         interpreter.interpret(statements)
 
 if __name__ == "__main__":
