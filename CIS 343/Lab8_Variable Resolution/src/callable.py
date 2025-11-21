@@ -17,13 +17,14 @@ class NogginCallable:
         raise NotImplementedError
 
 class NogginFunction(NogginCallable):
-    def __init__(self, declaration:Function):
+    def __init__(self, declaration:Function, closure:Environment):
         self.declaration = declaration
+        self.closure = closure
 
     def call(self, interpreter, arguments:List):
         previous = interpreter.environment
         # Create a new environment for the function call
-        interpreter.environment = Environment(previous)
+        interpreter.environment = Environment(self.closure)
         # Define all local variables
         for i in range(0, self.arity()):
             interpreter.environment.define(self.declaration.parameters[i], arguments[i])

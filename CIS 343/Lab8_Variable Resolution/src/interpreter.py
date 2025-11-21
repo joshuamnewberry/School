@@ -67,7 +67,7 @@ class Interpreter(Visitor):
         return None
     
     def visit_function(self, function:Function):
-        self.environment.define(function.name, NogginFunction(function))
+        self.environment.define(function.name, NogginFunction(function, self.environment))
 
     def visit_call(self, call:Call):
         callee = self.evaluate(call.callee)
