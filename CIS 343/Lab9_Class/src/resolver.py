@@ -95,7 +95,7 @@ class Resolver(Visitor):
         return None
 
     def visit_return(self, stmt:Return):
-        if self.current_function is None:
+        if self.current_function is FunctionType.NONE:
             ErrorHandler.error(stmt.keyword, "Cannot return from top-level code.")
         if stmt.value is not None:
             self.resolve(stmt.value)

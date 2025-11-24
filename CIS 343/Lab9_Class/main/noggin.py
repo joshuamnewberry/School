@@ -1,6 +1,7 @@
 from re import X
 import sys
 import os
+from typing import List
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 from error_handler import ErrorHandler
 from scanner import Scanner
@@ -11,35 +12,43 @@ from environment import Environment
 from resolver import Resolver
 
 class Noggin:
+    def __init__(self):
+        self.environment = Environment()
+        self.history:List = []
+
     def run_file(self, path):
-        environment = Environment()
         with open(path) as f:
-            self.run(f.read(), environment)
+            self.run(f.read())
     
     def run_prompt(self):
-        environment = Environment()
         try:
             print(">>>>> PNoggin Interactive Shell <<<<<")
             while True:
-                self.run(input("> "), environment)
+                self.run(input("> "))
                 ErrorHandler.had_error = False
                 ErrorHandler.had_runtime_error = False
         except KeyboardInterrupt:
             print("\nExiting PNoggin Interactive Shell.")
     
-    def run(self, source, environment):
+    def run(self, source):
         scanner = Scanner(source)
         tokens = scanner.scan_tokens()
         parser = Parser(tokens)
         statements = parser.parse()
-        if (ErrorHandler.had_error):
+        if ErrorHandler.had_error:
             return
-        interpreter = Interpreter(environment)
-        resolver = Resolver(interpreter)
-        resolver.resolve(statements)
-        if (ErrorHandler.had_error):
+        interpreter = Interpreter(self.environment)
+        resolver = None
+        if isinstance(statements, List):
+            resolver = Resolver(interpreter)
+            resolver.resolve(self.history + statements)
+        if ErrorHandler.had_error:
             return
         interpreter.interpret(statements)
+        if ErrorHandler.had_error:
+            return
+        if resolver is not None:
+            self.history.append(statements)
 
 if __name__ == "__main__":
     noggin = Noggin()
