@@ -19,19 +19,19 @@ class Environment:
         else:
             raise NogginRuntimeError(name, f"Variable {name.lexeme} has no value (no variable declaration)")
     
-    def get_at(self, distance, name):
-        return self.ancestor(distance).dict.get(name)
+    def get_at(self, distance:int, name:Token):
+        return self.ancestor(distance).dict.get(name.lexeme)
     
-    def ancestor(self, distance) -> Environment:
+    def ancestor(self:Environment, distance:int) -> Environment:
         environment = self
         for _ in range(distance):
-            if isinstance(environment, Environment):
+            if isinstance(environment.parent, Environment):
                 environment = environment.parent
-        if isinstance(environment, Environment):
-            return environment
-        return Environment()
+            else:
+                raise RuntimeError("Resolver calculated invalid scope distance")
+        return environment
 
-    def assign (self, name:Token, value):
+    def assign (self, name:Token, value:Any):
         if name.lexeme in self.dict.keys():
             self.dict.update({name.lexeme:value})
         elif self.parent:
@@ -39,5 +39,5 @@ class Environment:
         else:
             raise NogginRuntimeError(name, f"Variable {name.lexeme} has not been declared")
     
-    def assign_at(self, distance, name, value):
+    def assign_at(self, distance, name:Token, value:Any):
         self.ancestor(distance).dict[name.lexeme] = value

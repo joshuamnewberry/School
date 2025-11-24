@@ -70,7 +70,7 @@ class Interpreter(Visitor):
     def lookup_variable(self, name, expr):
         distance = self.locals.get(expr)
         if distance is not None:
-            return self.environment.get_at(distance, name.lexeme)
+            return self.environment.get_at(distance, name)
         return self.globals.get(name)
     
     def visit_expression(self, expressionObj:Expression):
