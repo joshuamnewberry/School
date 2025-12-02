@@ -19,6 +19,11 @@ class Def(Stmt):
         self.name = name
         self.initializer = initializer
 
+class Class(Stmt):
+    def __init__(self, name:Token, methods:List):
+        self.name = name
+        self.methods = methods
+
 class Assignment(Stmt):
     def __init__(self, name:Token, expression):
         self.name = name

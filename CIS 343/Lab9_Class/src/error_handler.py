@@ -23,7 +23,10 @@ class ErrorHandler:
         print(f"[line {line}] Error{where}: {message}")
         ErrorHandler.had_error = True
 
-class ParseError(RuntimeError):
+class NogginParseError(RuntimeError):
+    pass
+
+class NogginResolverError(RuntimeError):
     pass
 
 class NogginRuntimeError(RuntimeError):

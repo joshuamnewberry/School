@@ -18,7 +18,7 @@ class Interpreter(Visitor):
             def call(self, interpreter, arguments):
                 return time()
             def arity(self):
-                return 
+                return 0
             def __str__(self):
                 return "<native fn>"
         class MinCallable(NogginCallable):
@@ -50,7 +50,7 @@ class Interpreter(Visitor):
         except NogginRuntimeError as error:
             ErrorHandler.error(error, "")
 
-    def evaluate(self, unknown):
+    def evaluate(self, unknown:Any):
         return self.visit(unknown)
     
     def stringify(self, input:Any) -> str:
@@ -73,24 +73,62 @@ class Interpreter(Visitor):
             return self.environment.get_at(distance, name)
         return self.globals.get(name)
     
+    def execute_block(self, statements: list[Stmt], environment):
+        previous_env = self.environment
+        try:
+            self.environment = environment
+            for stmt in statements:
+                self.evaluate(stmt)
+        finally:
+            self.environment = previous_env
+    
     def visit_expression(self, expressionObj:Expression):
         self.evaluate(expressionObj.expression)
         return None
     
     def visit_function(self, function:Function):
         self.environment.define(function.name, NogginFunction(function, self.environment))
-
-    def visit_call(self, call:Call):
-        callee = self.evaluate(call.callee)
-        if not isinstance(callee, NogginCallable):
-            raise NogginRuntimeError(call.right_paren, "Expected a defined function")
-        expected = callee.arity()
-        if expected is not None and expected != len(call.arguments):
-            raise NogginRuntimeError(call.right_paren, f"Expected {expected} arguments but got {len(call.arguments)}.")
-        arguments = [self.evaluate(arg) for arg in call.arguments]
-        return callee.call(self, arguments)
+        return None
     
-    def visit_return(self, stmt):
+    def visit_class(self, stmt:Class):
+        self.environment.define(stmt.name, None)
+
+        methods = {}
+        for method in stmt.methods:
+            is_init = method.name.lexeme == "init"
+            function = NogginFunction(method, self.environment, is_init)
+            methods[method.name.lexeme] = function
+
+        klass = NogginClass(stmt.name.lexeme, methods)
+        self.environment.assign(stmt.name, klass)
+        return None
+
+    def visit_get(self, expr:Get):
+        obj = self.evaluate(expr.object)
+        if not isinstance(obj, NogginInstance):
+            raise NogginRuntimeError(expr.name, "Only instances have properties")
+        return obj.get(expr.name)
+
+    def visit_set(self, expr:Set):
+        obj = self.evaluate(expr.object)
+        if not isinstance(obj, NogginInstance):
+            raise NogginRuntimeError(expr.name, "Only instances have fields")
+        value = self.evaluate(expr.value)
+        return obj.set(expr.name, value)
+
+    def visit_this(self, expr):
+        return self.lookup_variable(expr.keyword, expr)
+
+    def visit_call(self, expr:Call):
+        callee = self.evaluate(expr.callee)
+        if not hasattr(callee, "call"):
+            raise NogginRuntimeError(expr.right_paren, "Can only call functions and classes")
+        if len(expr.arguments) != callee.arity():
+            raise NogginRuntimeError(expr.right_paren, f"Expected {callee.arity()} arguments but got {len(expr.arguments)}")
+        args = [self.evaluate(arg) for arg in expr.arguments]
+        return callee.call(self, args)
+    
+    def visit_return(self, stmt:Return):
         value = None
         if stmt.value is not None:
             value = self.evaluate(stmt.value)
@@ -113,15 +151,9 @@ class Interpreter(Visitor):
 
     def visit_variable(self, var:Variable):
         return self.lookup_variable(var.name, var)
-
-    def visit_assignment(self, assign:Assignment):
-        name = assign.name.lexeme
-        value = self.evaluate(assign.expression)
-        self.environment.assign(assign.name, value)
-        return None
     
-    def visit_assign(self, expr):
-        value = self.evaluate(expr.value)
+    def visit_assignment(self, expr:Assignment):
+        value = self.evaluate(expr.expression)
         distance = self.locals.get(expr)
         if distance is not None:
             self.environment.assign_at(distance, expr.name, value)

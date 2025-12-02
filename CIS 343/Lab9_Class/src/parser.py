@@ -1,5 +1,5 @@
 from typing import Any, List
-from error_handler import ErrorHandler, ParseError
+from error_handler import ErrorHandler, NogginParseError
 from token_type import TokenType
 from noggin_token import Token
 from expr import *
@@ -17,19 +17,20 @@ class Parser:
         while (not self.is_at_end()):
             try:
                 self.statements.append(self.statement())
-            except ParseError:
+            except NogginParseError:
                 self.synchronize()
         if len(self.statements) == 1 and isinstance(self.statements[0], Expression):
             return self.statements[0]
         return self.statements
     
-    def statement(self) -> Print|Def|Function|Assignment|Block|If|While|Return|Expression:
+    def statement(self) -> Print|Def|Class|Function|Assignment|Block|If|While|Return|Set|Expression:
         if self.match(TokenType.PRINT): ## Print
             return self.printStatement()
         elif self.match(TokenType.DEF): ## Declare and Function
             return self.declaration()
-        elif self.check(TokenType.IDENTIFIER) and self.peek_next().type == TokenType.EQUAL: ## Assign
-            self.advance()
+        elif self.match(TokenType.CLASS):
+            return self.klass()
+        elif self.is_start_of_assignment(): ## Assign
             return self.assignmentStatement()
         elif self.match(TokenType.LEFT_BRACE): ## Block
             return self.block()
@@ -44,13 +45,39 @@ class Parser:
         else: ## Expression of some other kind
             return self.expressionStatement()
     
+    def is_start_of_assignment(self) -> bool:
+        index = self.current
+        if self.tokens[index].type not in (TokenType.IDENTIFIER, TokenType.THIS):
+            return False
+        index += 1
+        while index < len(self.tokens) and self.tokens[index].type == TokenType.DOT:
+            index += 1
+            if index >= len(self.tokens) or self.tokens[index].type != TokenType.IDENTIFIER:
+                return False
+            index += 1
+        if index < len(self.tokens) and self.tokens[index].type == TokenType.EQUAL:
+            return True
+        return False
+    
+    def klass(self):
+        self.consume(TokenType.IDENTIFIER, "Expect name after class token")
+        name = self.previous()
+        self.consume(TokenType.LEFT_BRACE, "Expect '{' before contents of class")
+        methods = []
+        while not self.match(TokenType.RIGHT_BRACE):
+            self.consume(TokenType.IDENTIFIER, "Expect function name for class function definitions")
+            if not self.check(TokenType.LEFT_PAREN):
+                raise self.error(self.peek(), "Expect '(' before parameters of function")
+            methods.append(self.function())
+        return Class(name, methods)
+    
     def declaration(self):
         self.consume(TokenType.IDENTIFIER, "Expect variable or function name after def token")
         if self.peek().type == TokenType.LEFT_PAREN:
             return self.function()
         return self.varDeclaration()
     
-    def function(self):
+    def function(self): 
         name = self.previous()
         self.advance()
         parameters = self.parameters()
@@ -112,7 +139,7 @@ class Parser:
         while (not self.check(TokenType.RIGHT_BRACE)) and (not self.is_at_end()):
             try:
                 statements.append(self.statement())
-            except ParseError:
+            except NogginParseError:
                 self.synchronize()
         self.consume(TokenType.RIGHT_BRACE, "Expect '}' at the end of block")
         return Block(statements)
@@ -139,11 +166,19 @@ class Parser:
         return Expression(expr)
     
     def assignmentStatement(self):
-        name = self.previous()
-        self.advance()
-        initializer = self.expression()
-        self.consume(TokenType.SEMICOLON, "Expect ';' after variable assignment")
-        return Assignment(name, initializer)
+        target = self.primary()
+        while self.match(TokenType.DOT):
+            self.consume(TokenType.IDENTIFIER, "Expect property name after '.'.")
+            name = self.previous()
+            target = Get(target, name)
+        self.consume(TokenType.EQUAL, "Expect '=' in assignment.")
+        value = self.expression()
+        self.consume(TokenType.SEMICOLON, "Expect ';' after assignment.")
+        if isinstance(target, Variable):
+            return Assignment(target.name, value)
+        if isinstance(target, Get):
+            return Set(target.object, target.name, value)
+        raise self.error(self.previous(), "Invalid assignment target.")
     
     def varDeclaration(self):
         name = self.previous()
@@ -222,10 +257,14 @@ class Parser:
     
     def call(self):
         left = self.primary()
-        while self.match(TokenType.LEFT_PAREN):
-            arguments = self.arguments()
-            self.consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments.")
-            left = Call(left, arguments, self.previous())
+        while self.match(TokenType.LEFT_PAREN, TokenType.DOT):
+            if self.previous().type == TokenType.DOT:
+                self.consume(TokenType.IDENTIFIER, "Expect Identifier after dot.")
+                left = Get(left, self.previous())
+            else:
+                arguments = self.arguments()
+                self.consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments.")
+                left = Call(left, arguments, self.previous())
         return left
 
     def arguments(self):
@@ -246,6 +285,8 @@ class Parser:
             return Literal(False)
         if self.match(TokenType.NULL):
             return Literal(None)
+        if self.match(TokenType.THIS):
+            return This(self.previous())
         if self.match(TokenType.LEFT_PAREN):
             expression = self.expression()
             self.consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.")
@@ -261,7 +302,7 @@ class Parser:
     
     def error(self, token, message):
         ErrorHandler().error(token, message)
-        return ParseError()
+        return NogginParseError()
     
     def synchronize(self):
         if not self.is_at_end():

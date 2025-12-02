@@ -2,19 +2,26 @@ from ast import And
 from enum import Enum
 from expr import Block
 from visitor import Visitor
-from error_handler import ErrorHandler
+from error_handler import *
 from interpreter import Interpreter
 from stmt import *
 
 class FunctionType(Enum):
     NONE = 0
     FUNCTION = 1
+    METHOD = 2
+    INITIALIZER = 3
+
+class ClassType(Enum):
+    NONE = 0
+    CLASS = 1
 
 class Resolver(Visitor):
     def __init__(self, interpreter:Interpreter):
         self.interpreter = interpreter
         self.scopes = []
         self.current_function = FunctionType.NONE
+        self.current_class = ClassType.NONE
 
     def resolve(self, stmt_expr):
         if stmt_expr is None:
@@ -56,22 +63,56 @@ class Resolver(Visitor):
         self.define(stmt.name)
         return None
 
-    def visit_function(self, stmt:Function):
+    def visit_Function(self, stmt:Function):
         self.declare(stmt.name)
         self.define(stmt.name)
-        self.resolve_function(stmt)
+        self.resolve_function(stmt, FunctionType.FUNCTION)
         return None
 
-    def resolve_function(self, function:Function):
+    def visit_class(self, stmt):
+        enclosing = self.current_class
+        self.current_class = ClassType.CLASS
+
+        self.declare(stmt.name)
+        self.define(stmt.name)
+
+        for method in stmt.methods:
+            declaration = FunctionType.METHOD
+            if method.name.lexeme == "init":
+                declaration = FunctionType.INITIALIZER
+            self.resolve_function(method, declaration)
+
+        self.current_class = enclosing
+        return None
+
+    def visit_this(self, expr):
+        if self.current_class == ClassType.NONE:
+            raise NogginResolverError(expr.keyword, "Cannot use this outside a class")
+        self.resolve_local(expr, expr.keyword)
+        return None
+
+    def resolve_function(self, function:Function, type):
         enclosing = self.current_function
-        self.current_function = FunctionType.FUNCTION
+        self.current_function = type
+
         self.scopes.append({})
+        if type in (FunctionType.METHOD, FunctionType.INITIALIZER):
+            self.scopes[-1]["this"] = True
         for param in function.parameters:
             self.declare(param)
             self.define(param)
-        self.resolve(function.block.statements)
+
+        self.resolve(function.block)
         self.scopes.pop()
         self.current_function = enclosing
+    
+    def visit_get(self, expr):
+        self.resolve(expr.object)
+        return None
+    
+    def visit_set(self, expr):
+        self.resolve(expr.object)
+        self.resolve(expr.value)
         return None
 
     def visit_expression(self, stmt:Expression):
