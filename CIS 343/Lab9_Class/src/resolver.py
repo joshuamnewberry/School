@@ -63,7 +63,7 @@ class Resolver(Visitor):
         self.define(stmt.name)
         return None
 
-    def visit_Function(self, stmt:Function):
+    def visit_function(self, stmt:Function):
         self.declare(stmt.name)
         self.define(stmt.name)
         self.resolve_function(stmt, FunctionType.FUNCTION)
@@ -87,22 +87,20 @@ class Resolver(Visitor):
 
     def visit_this(self, expr):
         if self.current_class == ClassType.NONE:
-            raise NogginResolverError(expr.keyword, "Cannot use this outside a class")
+            ErrorHandler.error(expr.keyword, "Cannot use this outside a class")
         self.resolve_local(expr, expr.keyword)
         return None
 
     def resolve_function(self, function:Function, type):
         enclosing = self.current_function
         self.current_function = type
-
         self.scopes.append({})
         if type in (FunctionType.METHOD, FunctionType.INITIALIZER):
             self.scopes[-1]["this"] = True
         for param in function.parameters:
             self.declare(param)
             self.define(param)
-
-        self.resolve(function.block)
+        self.resolve(function.block.statements)
         self.scopes.pop()
         self.current_function = enclosing
     
@@ -138,6 +136,8 @@ class Resolver(Visitor):
     def visit_return(self, stmt:Return):
         if self.current_function is FunctionType.NONE:
             ErrorHandler.error(stmt.keyword, "Cannot return from top-level code.")
+        if self.current_function is FunctionType.INITIALIZER and stmt.value is not None:
+            ErrorHandler.error(stmt.keyword, "Cannot return a value from an initialzer function")
         if stmt.value is not None:
             self.resolve(stmt.value)
         return None

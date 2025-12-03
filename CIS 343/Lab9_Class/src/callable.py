@@ -41,7 +41,6 @@ class NogginFunction(NogginCallable):
 
         for index, param in enumerate(self.declaration.parameters):
             local_env.define(param, arguments[index])
-
         try:
             interpreter.execute_block(self.declaration.block.statements, local_env)
         except NogginReturn as r:
