@@ -44,7 +44,7 @@ class Noggin:
         if source == "clear":
             self.clear()
             return
-        if source == "undo":
+        if source == "goback":
             if len(self.previous_environment) >= 1:
                 self.environment = self.previous_environment.pop()
             else:
@@ -68,7 +68,7 @@ class Noggin:
         if ErrorHandler.had_error:
             return
         interpreter.interpret(statements)
-        if ErrorHandler.had_error:
+        if ErrorHandler.had_runtime_error:
             return
         if resolver is not None:
             self.history.append(statements)
