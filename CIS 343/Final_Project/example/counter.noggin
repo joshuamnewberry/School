@@ -1,0 +1,15 @@
+class Counter {
+    init(start) {
+        this.value = start;
+    }
+
+    inc() {
+        this.value = this.value + 1;
+        return this.value;
+    }
+}
+
+def c = Counter(10);
+print(c.inc());
+print(c.inc());
+print(c.inc());
