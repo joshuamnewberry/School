@@ -1,15 +1,21 @@
-class Counter {
-    init(start) {
+class Counter
+{
+    init(start)
+    {
         this.value = start;
     }
 
-    inc() {
+    inc()
+    {
         this.value = this.value + 1;
         return this.value;
     }
 }
 
 def c = Counter(10);
+print(c.value);
 print(c.inc());
 print(c.inc());
 print(c.inc());
+c.value = 50;
+print(c.value);

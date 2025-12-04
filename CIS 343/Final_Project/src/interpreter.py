@@ -35,9 +35,19 @@ class Interpreter(Visitor):
                 return 2
             def __str__(self):
                 return "<native fn>"
-        self.environment.define(Token(TokenType.IDENTIFIER, "clock", "clock", None), ClockCallable())
-        self.environment.define(Token(TokenType.IDENTIFIER, "min", "min", None), MinCallable())
-        self.environment.define(Token(TokenType.IDENTIFIER, "max", "max", None), MaxCallable())
+        class StringCallable(NogginCallable):
+            def call(self, interpreter:Interpreter, arguments):
+                return interpreter.stringify(arguments[0])
+            def arity(self):
+                return 1
+            def __str__(self):
+                return "<native fn>"
+        self.native_functions = ["clock", "min", "max", "str"]
+
+        self.globals.define(Token(TokenType.IDENTIFIER, "clock", "clock", None), ClockCallable())
+        self.globals.define(Token(TokenType.IDENTIFIER, "min", "min", None), MinCallable())
+        self.globals.define(Token(TokenType.IDENTIFIER, "max", "max", None), MaxCallable())
+        self.globals.define(Token(TokenType.IDENTIFIER, "str", "str", None), StringCallable())
 
     def interpret(self, statements:Expression|List[Stmt]):
         try:
@@ -87,6 +97,8 @@ class Interpreter(Visitor):
         return None
     
     def visit_function(self, function:Function):
+        if function.name.lexeme in self.native_functions:
+            raise NogginRuntimeError(function.name, f"Cannot overwrite native function '{function.name.lexeme}'")
         self.environment.define(function.name, NogginFunction(function, self.environment))
         return None
     

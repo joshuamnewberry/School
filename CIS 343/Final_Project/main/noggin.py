@@ -14,7 +14,10 @@ from resolver import Resolver
 class Noggin:
     def __init__(self):
         self.environment = Environment()
-        self.history:List = []
+        self.history = []
+        self.clear = lambda: os.system('cls')
+        self.previous_environment = []
+        self.previous_history = []
 
     def run_file(self, path):
         with open(path) as f:
@@ -31,7 +34,27 @@ class Noggin:
             print("\nExiting PNoggin Interactive Shell.")
     
     def run(self, source):
-        scanner = Scanner(source)
+        if source == "allclear":
+            self.clear()
+            self.previous_environment.append(self.environment)
+            self.environment = Environment()
+            self.previous_history.append(self.history)
+            self.history = []
+            return
+        if source == "clear":
+            self.clear()
+            return
+        if source == "undo":
+            if len(self.previous_environment) >= 1:
+                self.environment = self.previous_environment.pop()
+            else:
+                print("Cannot revert to a previous environment")
+            if len(self.previous_history) >= 1:
+                self.history = self.previous_history.pop()
+            else:
+                print("Cannot revert to a previous history")
+            return
+        scanner = Scanner(source, len(self.history))
         tokens = scanner.scan_tokens()
         parser = Parser(tokens)
         statements = parser.parse()

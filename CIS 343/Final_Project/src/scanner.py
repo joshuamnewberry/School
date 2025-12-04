@@ -3,7 +3,7 @@ from token_type import TokenType
 from noggin_token import Token
 
 class Scanner:
-    def __init__(self, source):
+    def __init__(self, source, line):
         self.source = source
         self.tokens = []
         self.keywords = {
@@ -24,7 +24,7 @@ class Scanner:
             "while": TokenType.WHILE
         }
         self.current = 0
-        self.line = 0
+        self.line = line
     
     def scan_tokens(self):
         while not self.is_at_end():
